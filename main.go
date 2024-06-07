@@ -127,14 +127,12 @@ func main() {
 				}
 			}()
 
-			if countdown(timeLeft, actName, person) == true {
-				continue
-			}
+			countdown(timeLeft, actName, person)
 		}
 	}
 }
 
-func countdown(totalDuration time.Duration, actTitle string, personNote string) (skipping bool) {
+func countdown(totalDuration time.Duration, actTitle string, personNote string) {
 	timeLeft := totalDuration
 	title := actTitle
 	note := personNote
