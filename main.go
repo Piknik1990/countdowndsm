@@ -4,21 +4,21 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
+	//"os/exec"
 	"strings"
 	"time"
+	"log"
 
 	"github.com/nsf/termbox-go"
+	"gopkg.in/yaml.v2"
 )
 
 const (
 	usage = `
- countdown [-up] [-say] <duration>
+ countdowndsm <pathtoconfig>
 
  Usage
-  countdown 25s
-  countdown 14:15
-  countdown 02:15PM
+	countdowndsm /path/to/config.yml
 
  Flags
 `
@@ -32,12 +32,19 @@ var (
 	queues         chan termbox.Event
 	w, h           int
 	inputStartTime time.Time
-	isPaused       bool
+	//sPaused       bool
 )
 
-func main() {
-	countUp := flag.Bool("up", false, "count up from zero")
-	sayTheTime := flag.Bool("say", false, "announce the time left")
+
+type yamlData struct {
+	MeetTime string `yaml:"meet_time"`
+	AskTime string `yaml:"ask_time"`
+	Persons []string `yaml:'persons'`
+}
+
+func ReadConfig() yamlData {
+	var config yamlData
+
 	flag.Parse()
 
 	args := flag.Args()
@@ -46,150 +53,23 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(2)
 	}
-	timeLeft, err := parseTime(args[0])
 
+	// Open YAML file
+	file, err := os.Open(args[0])
 	if err != nil {
-		timeLeft, err = time.ParseDuration(args[0])
-		if err != nil {
-			stderr("error: invalid duration or time: %v\n", args[0])
-			os.Exit(2)
-		}
+			log.Println(err.Error())
 	}
+	defer file.Close()
 
-	err = termbox.Init()
-	if err != nil {
-		panic(err)
-	}
-
-	queues = make(chan termbox.Event)
-	go func() {
-		for {
-			queues <- termbox.PollEvent()
-		}
-	}()
-	countdown(timeLeft, *countUp, *sayTheTime)
-}
-
-func start(d time.Duration) {
-	timer = time.NewTimer(d)
-	ticker = time.NewTicker(tick)
-}
-
-func stop() {
-	timer.Stop()
-	ticker.Stop()
-}
-
-func durationToDraw(timeLeft, totalDuration time.Duration, countUp bool) time.Duration {
-	if countUp {
-		return totalDuration - timeLeft
-	}
-	return timeLeft
-}
-
-func countdown(totalDuration time.Duration, countUp bool, sayTheTime bool) {
-	timeLeft := totalDuration
-	var exitCode int
-	isPaused = false
-	w, h = termbox.Size()
-	start(timeLeft)
-
-	draw(durationToDraw(timeLeft, totalDuration, countUp), w, h)
-	if sayTheTime {
-		go say(timeLeft)
-	}
-
-loop:
-	for {
-		select {
-		case ev := <-queues:
-			if ev.Key == termbox.KeyEsc || ev.Key == termbox.KeyCtrlC {
-				exitCode = 1
-				break loop
+	// Decode YAML file to struct
+	if file != nil {
+			decoder := yaml.NewDecoder(file)
+			if err := decoder.Decode(&config); err != nil {
+					log.Println(err.Error())
 			}
-
-			if pressTime := time.Now(); ev.Key == termbox.KeySpace && pressTime.Sub(inputStartTime) > inputDelayMS {
-				if isPaused {
-					start(timeLeft)
-					draw(durationToDraw(timeLeft, totalDuration, countUp), w, h)
-				} else {
-					stop()
-					drawPause(w, h)
-				}
-
-				isPaused = !isPaused
-				inputStartTime = time.Now()
-			}
-
-			if ev.Type == termbox.EventResize {
-				w, h = termbox.Size()
-				draw(durationToDraw(timeLeft, totalDuration, countUp), w, h)
-
-				if isPaused {
-					drawPause(w, h)
-				}
-			}
-		case <-ticker.C:
-			timeLeft -= tick
-			draw(durationToDraw(timeLeft, totalDuration, countUp), w, h)
-			if sayTheTime {
-				go say(timeLeft)
-			}
-		case <-timer.C:
-			break loop
-		}
 	}
 
-	termbox.Close()
-	if exitCode != 0 {
-		os.Exit(exitCode)
-	}
-}
-
-func draw(d time.Duration, w int, h int) {
-	clear()
-
-	str := format(d)
-	text := toText(str)
-
-	startX, startY := w/2-text.width()/2, h/2-text.height()/2
-
-	x, y := startX, startY
-	for _, s := range text {
-		echo(s, x, y)
-		x += s.width()
-	}
-
-	flush()
-}
-
-func drawPause(w int, h int) {
-	startX := w/2 - pausedText.width()/2
-	startY := h * 3 / 4
-
-	echo(pausedText, startX, startY)
-	flush()
-}
-
-func format(d time.Duration) string {
-	d = d.Round(time.Second)
-	h := d / time.Hour
-	d -= h * time.Hour
-	m := d / time.Minute
-	d -= m * time.Minute
-	s := d / time.Second
-
-	if h < 1 {
-		return fmt.Sprintf("%02d:%02d", m, s)
-	}
-	return fmt.Sprintf("%02d:%02d:%02d", h, m, s)
-}
-
-func say(d time.Duration) {
-	if d.Seconds() <= 10 {
-		cmd := exec.Command("say", fmt.Sprintf("%v", d.Seconds()))
-		_ = cmd.Run()
-	}
+	return config
 }
 
 func parseTime(date string) (time.Duration, error) {
@@ -212,4 +92,119 @@ func parseTime(date string) (time.Duration, error) {
 	duration := targetTime.Sub(originTime)
 
 	return duration, err
+}
+
+func main() {
+
+	config := ReadConfig()
+
+	timeLeftMeet, err := parseTime(config.MeetTime)
+
+	if err != nil {
+		timeLeftMeet, err = time.ParseDuration(config.MeetTime)
+		if err != nil {
+			stderr("error: MeetTime: invalid duration or time: %v\n", config.MeetTime)
+			os.Exit(2)
+		}
+	}
+
+	timeLeftAsk, err := parseTime(config.MeetTime)
+
+	if err != nil {
+		timeLeftAsk, err = time.ParseDuration(config.MeetTime)
+		if err != nil {
+			stderr("error: AskTime: invalid duration or time: %v\n", config.MeetTime)
+			os.Exit(3)
+		}
+	}
+
+	// Clean terminal
+	err = termbox.Init()
+	if err != nil {
+		panic(err)
+	}
+
+	queues = make(chan termbox.Event)
+	go func() {
+		for {
+			queues <- termbox.PollEvent()
+		}
+	}()
+
+	countdown(timeLeftMeet, timeLeftAsk)
+
+}
+
+func countdown(totalDurationMeet time.Duration, totalDurationAsk time.Duration) {
+	timeLeftMeet := totalDurationMeet
+	var exitCode int
+	w, h = termbox.Size()
+	start(timeLeftMeet)
+
+	draw(timeLeftMeet, w, h)
+
+loop:
+	for {
+		select {
+		case ev := <-queues:
+			// Ctrl+C/Esc
+			if ev.Key == termbox.KeyEsc || ev.Key == termbox.KeyCtrlC {
+				exitCode = 1
+				break loop
+			}
+
+		case <-ticker.C:
+			timeLeftMeet -= tick
+			draw(timeLeftMeet, w, h)
+		case <-timer.C:
+			break loop
+		}
+	}
+
+	termbox.Close()
+	if exitCode != 0 {
+		os.Exit(exitCode)
+	}
+}
+
+func start(d time.Duration) {
+	timer = time.NewTimer(d)
+	ticker = time.NewTicker(tick)
+}
+
+func format(d time.Duration) string {
+	d = d.Round(time.Second)
+	h := d / time.Hour
+	d -= h * time.Hour
+	m := d / time.Minute
+	d -= m * time.Minute
+	s := d / time.Second
+
+	if h < 1 {
+		return fmt.Sprintf("%02d:%02d", m, s)
+	}
+	return fmt.Sprintf("%02d:%02d:%02d", h, m, s)
+}
+
+
+func draw(d time.Duration, w int, h int) {
+	clear()
+
+	str := format(d)
+	timerText := toText(str)
+	titleStatus := toText(strings.ToLower("Выступление"))
+
+	xTitle, yTitle, xTimer, yTimer := w/2-titleStatus.width()/2, h/2-timerText.height()/2-2-titleStatus.height(), w/2-timerText.width()/2, h/2-timerText.height()/2
+
+	for _, symbolTitle := range titleStatus {
+		echo_symbol(symbolTitle, xTitle, yTitle)
+		xTitle += symbolTitle.width()
+	}
+
+	for _, symbolTimer := range timerText {
+		echo_symbol(symbolTimer, xTimer, yTimer)
+		xTimer += symbolTimer.width()
+	}
+
+	flush()
 }
