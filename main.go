@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	//"os/exec"
 	"strings"
 	"time"
 	"log"
@@ -27,18 +26,18 @@ const (
 )
 
 var (
-	timer          *time.Timer
-	ticker         *time.Ticker
-	queues         chan termbox.Event
-	w, h           int
-	inputStartTime time.Time
-	//sPaused       bool
+	timer          	*time.Timer
+	ticker         	*time.Ticker
+	queues         	chan termbox.Event
+	w, h           	int
+	inputStartTime 	time.Time
+	actTime				 	string
+	actName					string
 )
 
 
 type yamlData struct {
-	MeetTime string `yaml:"meet_time"`
-	AskTime string `yaml:"ask_time"`
+	Acts []map[string]interface{} `yaml:'acts'`
 	Persons []string `yaml:'persons'`
 }
 
@@ -98,50 +97,52 @@ func main() {
 
 	config := ReadConfig()
 
-	timeLeftMeet, err := parseTime(config.MeetTime)
+	fmt.Println(config.Acts)
 
-	if err != nil {
-		timeLeftMeet, err = time.ParseDuration(config.MeetTime)
+	for actIndex, act := range config.Acts {
+
+		actTime, _ := act["time"].(string)
+		actName, _ := act["name"].(string)
+
+		fmt.Println(actTime)
+		fmt.Println(actName)
+
+		timeLeft, err := parseTime(actTime)
+
 		if err != nil {
-			stderr("error: MeetTime: invalid duration or time: %v\n", config.MeetTime)
-			os.Exit(2)
+			timeLeft, err = time.ParseDuration(actTime)
+			if err != nil {
+				stderr("error: Time: invalid duration or time: acts[%v]\n", actIndex)
+				os.Exit(2)
+			}
 		}
-	}
 
-	timeLeftAsk, err := parseTime(config.MeetTime)
-
-	if err != nil {
-		timeLeftAsk, err = time.ParseDuration(config.MeetTime)
+		// Clean terminal
+		err = termbox.Init()
 		if err != nil {
-			stderr("error: AskTime: invalid duration or time: %v\n", config.MeetTime)
-			os.Exit(3)
+			panic(err)
 		}
+
+		queues = make(chan termbox.Event)
+		go func() {
+			for {
+				queues <- termbox.PollEvent()
+			}
+		}()
+
+		countdown(timeLeft, actName)
 	}
-
-	// Clean terminal
-	err = termbox.Init()
-	if err != nil {
-		panic(err)
-	}
-
-	queues = make(chan termbox.Event)
-	go func() {
-		for {
-			queues <- termbox.PollEvent()
-		}
-	}()
-
-	countdown(timeLeftMeet, timeLeftAsk)
 
 }
 
-func countdown(totalDurationMeet time.Duration, totalDurationAsk time.Duration) {
-	timeLeftMeet := totalDurationMeet
+func countdown(totalDuration time.Duration, actTitle string) {
+	timeLeft := totalDuration
+	title := actTitle
 	var exitCode int
 	w, h = termbox.Size()
-	start(timeLeftMeet)
+	start(timeLeft)
 
-	draw(timeLeftMeet, w, h)
+	draw(title, timeLeft, w, h)
 
 loop:
 	for {
@@ -154,8 +155,8 @@ loop:
 			}
 
 		case <-ticker.C:
-			timeLeftMeet -= tick
-			draw(timeLeftMeet, w, h)
+			timeLeft -= tick
+			draw(title, timeLeft, w, h)
 		case <-timer.C:
 			break loop
 		}
@@ -187,12 +188,12 @@ func format(d time.Duration) string {
 }
 
 
-func draw(d time.Duration, w int, h int) {
+func draw(t string, d time.Duration, w int, h int) {
 	clear()
 
 	str := format(d)
 	timerText := toText(str)
-	titleStatus := toText(strings.ToLower("Выступление"))
+	titleStatus := toTextSmall(strings.ToLower(t))
 
 	xTitle, yTitle, xTimer, yTimer := w/2-titleStatus.width()/2, h/2-timerText.height()/2-2-titleStatus.height(), w/2-timerText.width()/2, h/2-timerText.height()/2
 

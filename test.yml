@@ -1,5 +1,11 @@
-meet_time: 1m30s
-ask_time: 30s
+acts:
+  - name: "Подготовка"
+    time: 10s
+  - name: "Выступление"
+    time: 30s
+  - name: "Вопросы"
+    time: 30s
+
 persons:
   - "Pers1"
   - "Pers2"

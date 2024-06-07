@@ -41,6 +41,16 @@ func toText(str string) Text {
 	return symbols
 }
 
+func toTextSmall(str string) Text {
+	symbols := make(Text, 0)
+	for _, r := range str {
+		if s, ok := defaultFontSmall[r]; ok {
+			symbols = append(symbols, s)
+		}
+	}
+	return symbols
+}
+
 type Font map[rune]Symbol
 
 // func echo(symbolTimer Symbol, symbolsText []rune, startX, startY, startYT int) {
