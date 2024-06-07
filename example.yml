@@ -1,11 +1,4 @@
-acts:
-  - name: "Preparation"
-    time: 10s
-  - name: "Speech"
-    time: 30s
-  - name: "Any questions?"
-    time: 30s
-
+# A list of randomly speaking people
 persons:
   - "Dylan Wang"
   - "Adam Smith"
@@ -24,4 +17,15 @@ persons:
   - "Robert Anthony Rodríguez"
   - "Moyo Akandé"
   - "Ryan Hansen"
+
+# The stages of the performance with the name and time
+acts:
+  - name: "Preparation"
+    time: 10s
+  - name: "Speech"
+    time: 1m30s
+  - name: "Any questions?"
+    time: 1m
+
+
 

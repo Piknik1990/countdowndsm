@@ -56,7 +56,7 @@ func ReadConfig() yamlData {
 	// Open YAML file
 	file, err := os.Open(args[0])
 	if err != nil {
-			log.Println(err.Error())
+		log.Println(err.Error())
 	}
 	defer file.Close()
 
@@ -64,7 +64,7 @@ func ReadConfig() yamlData {
 	if file != nil {
 			decoder := yaml.NewDecoder(file)
 			if err := decoder.Decode(&config); err != nil {
-					log.Println(err.Error())
+				log.Println(err.Error())
 			}
 	}
 
@@ -97,7 +97,6 @@ func main() {
 
 	config := ReadConfig()
 
-
 	for _, person := range config.Persons {
 
 		for actIndex, act := range config.Acts {
@@ -128,17 +127,24 @@ func main() {
 				}
 			}()
 
-			countdown(timeLeft, actName, person)
+			if countdown(timeLeft, actName, person) == true {
+				continue
+			}
 		}
 	}
 }
 
-func countdown(totalDuration time.Duration, actTitle string, personNote string) {
+func countdown(totalDuration time.Duration, actTitle string, personNote string) (skipping bool) {
 	timeLeft := totalDuration
 	title := actTitle
 	note := personNote
 
-	var exitCode int
+	var (
+		exitCode 				int
+		skipAndContinue bool
+	)
+
+	skipAndContinue = false
 	w, h = termbox.Size()
 	start(timeLeft)
 
@@ -147,25 +153,36 @@ func countdown(totalDuration time.Duration, actTitle string, personNote string) 
 loop:
 	for {
 		select {
-		case ev := <-queues:
-			// Ctrl+C/Esc
-			if ev.Key == termbox.KeyEsc || ev.Key == termbox.KeyCtrlC {
-				exitCode = 1
-				break loop
-			}
+			case ev := <-queues:
+				// Ctrl+C/Esc
+				if ev.Key == termbox.KeyEsc || ev.Key == termbox.KeyCtrlC {
+					exitCode = 1
+					break loop
+				}
+				// Space/Enter
+				if ev.Key == termbox.KeySpace || ev.Key == termbox.KeyEnter {
+					skipAndContinue = true
+				}
 
-		case <-ticker.C:
-			timeLeft -= tick
-			draw(title, timeLeft, note, w, h)
-		case <-timer.C:
-			break loop
+			case <-ticker.C:
+				timeLeft -= tick
+				if skipAndContinue == true {
+					skipAndContinue = false
+					break loop
+				}
+				draw(title, timeLeft, note, w, h)
+			case <-timer.C:
+				break loop
 		}
 	}
 
 	termbox.Close()
+
 	if exitCode != 0 {
 		os.Exit(exitCode)
 	}
+
+	return
 }
 
 func start(d time.Duration) {
@@ -214,4 +231,5 @@ func draw(t string, d time.Duration, n string, w int, h int) {
 	}
 
 	flush()
+
 }
