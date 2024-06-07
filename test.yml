@@ -1,11 +1,27 @@
 acts:
-  - name: "Подготовка"
+  - name: "Preparation"
     time: 10s
-  - name: "Выступление"
+  - name: "Speech"
     time: 30s
-  - name: "Вопросы"
+  - name: "Any questions?"
     time: 30s
 
 persons:
-  - "Pers1"
-  - "Pers2"
+  - "Dylan Wang"
+  - "Adam Smith"
+  - "Booker Devi"
+  - "Александр Иванов"
+  - "Taehyung Kim"
+  - "Ali Mahershala"
+  - "Sergio García"
+  - "Thomas Müller"
+  - "Danilo Luiz da Silva"
+  - "Said Ahmed Mohamed"
+  - "Abel Makkonen Tesfaye"
+  - "Junior Makabu Ilunga"
+  - "Eiza González"
+  - "Deng Xiaoping"
+  - "Robert Anthony Rodríguez"
+  - "Moyo Akandé"
+  - "Ryan Hansen"
+

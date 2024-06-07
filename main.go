@@ -97,52 +97,52 @@ func main() {
 
 	config := ReadConfig()
 
-	fmt.Println(config.Acts)
 
-	for actIndex, act := range config.Acts {
+	for _, person := range config.Persons {
 
-		actTime, _ := act["time"].(string)
-		actName, _ := act["name"].(string)
+		for actIndex, act := range config.Acts {
 
-		fmt.Println(actTime)
-		fmt.Println(actName)
+			actTime, _ := act["time"].(string)
+			actName, _ := act["name"].(string)
 
-		timeLeft, err := parseTime(actTime)
+			timeLeft, err := parseTime(actTime)
 
-		if err != nil {
-			timeLeft, err = time.ParseDuration(actTime)
 			if err != nil {
-				stderr("error: Time: invalid duration or time: acts[%v]\n", actIndex)
-				os.Exit(2)
+				timeLeft, err = time.ParseDuration(actTime)
+				if err != nil {
+					stderr("error: Time: invalid duration or time: acts[%v]\n", actIndex)
+					os.Exit(2)
+				}
 			}
-		}
 
-		// Clean terminal
-		err = termbox.Init()
-		if err != nil {
-			panic(err)
-		}
-
-		queues = make(chan termbox.Event)
-		go func() {
-			for {
-				queues <- termbox.PollEvent()
+			// Clean terminal
+			err = termbox.Init()
+			if err != nil {
+				panic(err)
 			}
-		}()
 
-		countdown(timeLeft, actName)
+			queues = make(chan termbox.Event)
+			go func() {
+				for {
+					queues <- termbox.PollEvent()
+				}
+			}()
+
+			countdown(timeLeft, actName, person)
+		}
 	}
-
 }
 
-func countdown(totalDuration time.Duration, actTitle string) {
+func countdown(totalDuration time.Duration, actTitle string, personNote string) {
 	timeLeft := totalDuration
 	title := actTitle
+	note := personNote
+
 	var exitCode int
 	w, h = termbox.Size()
 	start(timeLeft)
 
-	draw(title, timeLeft, w, h)
+	draw(title, timeLeft, note, w, h)
 
 loop:
 	for {
@@ -156,7 +156,7 @@ loop:
 
 		case <-ticker.C:
 			timeLeft -= tick
-			draw(title, timeLeft, w, h)
+			draw(title, timeLeft, note, w, h)
 		case <-timer.C:
 			break loop
 		}
@@ -188,14 +188,15 @@ func format(d time.Duration) string {
 }
 
 
-func draw(t string, d time.Duration, w int, h int) {
+func draw(t string, d time.Duration, n string, w int, h int) {
 	clear()
 
 	str := format(d)
 	timerText := toText(str)
 	titleStatus := toTextSmall(strings.ToLower(t))
+	personNote := toTextSmall(strings.ToLower(n))
 
-	xTitle, yTitle, xTimer, yTimer := w/2-titleStatus.width()/2, h/2-timerText.height()/2-2-titleStatus.height(), w/2-timerText.width()/2, h/2-timerText.height()/2
+	xTitle, yTitle, xTimer, yTimer, xNote, yNote := w/2-titleStatus.width()/2, h/2-timerText.height()/2-2-titleStatus.height(), w/2-timerText.width()/2, h/2-timerText.height()/2, w/2-personNote.width()/2, h/2+timerText.height()/2+2
 
 	for _, symbolTitle := range titleStatus {
 		echo_symbol(symbolTitle, xTitle, yTitle)
@@ -205,6 +206,11 @@ func draw(t string, d time.Duration, w int, h int) {
 	for _, symbolTimer := range timerText {
 		echo_symbol(symbolTimer, xTimer, yTimer)
 		xTimer += symbolTimer.width()
+	}
+
+	for _, symbolNote := range personNote {
+		echo_symbol(symbolNote, xNote, yNote)
+		xNote += symbolNote.width()
 	}
 
 	flush()
