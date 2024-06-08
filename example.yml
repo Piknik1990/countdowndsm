@@ -18,6 +18,9 @@ persons:
   - "Moyo Akandé"
   - "Ryan Hansen"
 
+# Mix persons
+random: true
+
 # The stages of the performance with the name and time
 acts:
   - name: "Preparation"

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 	"log"
+	"math/rand"
 
 	"github.com/nsf/termbox-go"
 	"gopkg.in/yaml.v2"
@@ -39,6 +40,7 @@ var (
 type yamlData struct {
 	Acts []map[string]interface{} `yaml:'acts'`
 	Persons []string `yaml:'persons'`
+	Random bool `yaml:'random'`
 }
 
 func ReadConfig() yamlData {
@@ -96,8 +98,15 @@ func parseTime(date string) (time.Duration, error) {
 func main() {
 
 	config := ReadConfig()
+	persons := config.Persons
 
-	for _, person := range config.Persons {
+	// Mix persons
+	if config.Random == true {
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(persons), func(i, j int) { persons[i], persons[j] = persons[j], persons[i] })
+	}
+
+	for _, person := range persons {
 
 		for actIndex, act := range config.Acts {
 
