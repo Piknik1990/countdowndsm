@@ -23,7 +23,6 @@ const (
  Flags
 `
 	tick         = time.Second
-	inputDelayMS = 500 * time.Millisecond
 )
 
 var (
