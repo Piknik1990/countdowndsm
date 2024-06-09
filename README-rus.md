@@ -15,15 +15,7 @@
 
 ## Установка
 
-```sh
-brew install countdowndsm
-```
-
-```sh
-go install https://github.com/Piknik1990/countdowndsm@latest
-```
-
-... или скачайте бинарный файл из [releases](https://github.com/Piknik1990/countdowndsm/releases).
+Cкачайте бинарный файл из [releases](https://github.com/Piknik1990/countdowndsm/releases).
 
 ## Использование
 

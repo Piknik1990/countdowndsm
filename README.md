@@ -15,15 +15,7 @@ Each participant goes through all the set stages of the performance. If the spea
 
 ## Install
 
-```sh
-brew install countdowndsm
-```
-
-```sh
-go install https://github.com/Piknik1990/countdowndsm@latest
-```
-
-Or download the binary file from [releases](https://github.com/Piknik1990/countdowndsm/releases).
+Download the binary file from [releases](https://github.com/Piknik1990/countdowndsm/releases).
 
 ## Usage
 
