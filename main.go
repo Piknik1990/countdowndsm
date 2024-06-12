@@ -147,10 +147,8 @@ func countdown(totalDuration time.Duration, actTitle string, personNote string) 
 
 	var (
 		exitCode 				int
-		skipAndContinue bool
 	)
 
-	skipAndContinue = false
 	w, h = termbox.Size()
 	start(timeLeft)
 
@@ -167,15 +165,11 @@ loop:
 				}
 				// Space/Enter
 				if ev.Key == termbox.KeySpace || ev.Key == termbox.KeyEnter {
-					skipAndContinue = true
+					break loop
 				}
 
 			case <-ticker.C:
 				timeLeft -= tick
-				if skipAndContinue == true {
-					skipAndContinue = false
-					break loop
-				}
 				draw(title, timeLeft, note, w, h)
 			case <-timer.C:
 				break loop

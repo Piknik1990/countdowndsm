@@ -41,21 +41,3 @@ countdowndsm /path/to/config.yml
 ## Лицензия
 
 [MIT](LICENSE)
-
-## Известные баги
-
-Если часто нажимать `Space` или `Enter` слишком часто (чаще, чем раз в кадр), то программа вытелает в ошибку с сообщением `out of range`
-
-```
-...
-panic: runtime error: slice bounds out of range [:-1]
- [running]:
-github.com/nsf/termbox-go.PollEvent(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
-        /home/nifaninks/go/pkg/mod/github.com/nsf/termbox-go@v1.1.1/api.go:384 +0x93a
-main.main.func2()
-        /share/git/countdowndsm/main.go:135 +0x30
-created by main.main
-        /share/git/countdowndsm/main.go:133 +0xbd
-```
-
-На штатную работу приложения (если редко использовать пропуск) это не влияет.

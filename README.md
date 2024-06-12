@@ -41,21 +41,3 @@ The configuration file contains the following parameters:
 ## License
 
 [MIT](LICENSE)
-
-## Known bugs
-
-If you often press `Space` or `Enter` too often (more than once per frame), the program crashes into an error with the message `out of range`
-
-```
-...
-panic: runtime error: slice bounds out of range [:-1]
- [running]:
-github.com/nsf/termbox-go.PollEvent(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
-        /home/nifaninks/go/pkg/mod/github.com/nsf/termbox-go@v1.1.1/api.go:384 +0x93a
-main.main.func2()
-        /share/git/countdowndsm/main.go:135 +0x30
-created by main.main
-        /share/git/countdowndsm/main.go:133 +0xbd
-```
-
-For regular operation of the application (if you rarely use a pass) it has no effect.
