@@ -8,6 +8,7 @@ import (
 	"time"
 	"log"
 	"math/rand"
+	"strconv"
 
 	"github.com/nsf/termbox-go"
 	"gopkg.in/yaml.v2"
@@ -41,6 +42,7 @@ type yamlData struct {
 	Persons []string `yaml:'persons'`
 	Random bool `yaml:'random'`
 	Next bool `yaml:'next'`
+	Counter bool `yaml:'counter'`
 }
 
 func ReadConfig() yamlData {
@@ -106,6 +108,8 @@ func main() {
 		rand.Shuffle(len(persons), func(i, j int) { persons[i], persons[j] = persons[j], persons[i] })
 	}
 
+	personsCount := len(persons)
+
 	for personIndex, person := range persons {
 
 		for actIndex, act := range config.Acts {
@@ -136,16 +140,19 @@ func main() {
 				}
 			}()
 
-			countdown(timeLeft, actName, person, config.Next, persons, personIndex)
+			countdown(timeLeft, actName, person, config.Next, persons, personIndex, config.Counter, personsCount)
 		}
 	}
 }
 
-func countdown(totalDuration time.Duration, actTitle string, personNote string, nextBool bool, allPersons []string, index int) {
+func countdown(totalDuration time.Duration, actTitle string, personNote string, nextBool bool, allPersons []string, personIndex int, counterBool bool, personCount int) {
 	timeLeft := totalDuration
 	title := actTitle
 	note := personNote
-	nextPerson := allPersons[index+1]
+	nextPerson := "last"
+	if personIndex+1 != personCount {
+		nextPerson = allPersons[personIndex+1]
+	}
 
 	var (
 		exitCode 				int
@@ -154,7 +161,7 @@ func countdown(totalDuration time.Duration, actTitle string, personNote string, 
 	w, h = termbox.Size()
 	start(timeLeft)
 
-	draw(title, timeLeft, note, w, h, nextBool, nextPerson)
+	draw(title, timeLeft, note, w, h, nextBool, nextPerson, personIndex, counterBool, personCount)
 
 loop:
 	for {
@@ -172,7 +179,7 @@ loop:
 
 			case <-ticker.C:
 				timeLeft -= tick
-				draw(title, timeLeft, note, w, h, nextBool, nextPerson)
+				draw(title, timeLeft, note, w, h, nextBool, nextPerson, personIndex, counterBool, personCount)
 			case <-timer.C:
 				break loop
 		}
@@ -207,13 +214,16 @@ func format(d time.Duration) string {
 }
 
 
-func draw(t string, d time.Duration, n string, w int, h int, next bool, np string) {
+func draw(t string, d time.Duration, p string, w int, h int, next bool, np string, pi int, counter bool, pc int) {
 	clear()
 
 	str := format(d)
 	timerText := toText(str)
 	titleStatus := toTextSmall(strings.ToLower(t))
-	personNote := toTextSmall(strings.ToLower(n))
+	personNote := toTextSmall(strings.ToLower(p))
+	if counter {
+		personNote = toTextSmall(strings.ToLower(p + " (" + strconv.Itoa(pi+1) + "/" + strconv.Itoa(pc) + ")"))
+	}
 	personNext := toTextSmall(strings.ToLower("next: " + np))
 
 	xTitle, yTitle, xTimer, yTimer, xNote, yNote, xNext, yNext := w/2-titleStatus.width()/2, h/2-timerText.height()/2-2-titleStatus.height(), w/2-timerText.width()/2, h/2-timerText.height()/2, w/2-personNote.width()/2, h/2+timerText.height()/2+2, w/2-personNext.width()/2, h/2+timerText.height()/2+6

@@ -53,21 +53,6 @@ func toTextSmall(str string) Text {
 
 type Font map[rune]Symbol
 
-// func echo(symbolTimer Symbol, symbolsText []rune, startX, startY, startYT int) {
-// 	x, y, yt := startX, startY, startYT
-// 	for _, line := range symbolTimer {
-// 		for _, r := range line {
-// 			termbox.SetCell(x, y, r, termbox.ColorDefault, termbox.ColorDefault)
-// 			x++
-// 		}
-// 		x = startX
-// 		y++
-// 	}
-// 	for textIndex, _ := range symbolsText {
-// 		termbox.SetCell(x, yt, symbolsText[textIndex], termbox.ColorDefault, termbox.ColorDefault)
-// 	}
-// }
-
 func echo_symbol(symbolTimer Symbol, startX, startY int) {
 	x, y := startX, startY
 	for _, line := range symbolTimer {
@@ -77,14 +62,6 @@ func echo_symbol(symbolTimer Symbol, startX, startY int) {
 		}
 		x = startX
 		y++
-	}
-}
-
-func echo_text(symbolText []rune, startX, startY int) {
-	x, y := startX, startY
-	for _, r := range symbolText {
-		termbox.SetCell(x, y, r, termbox.ColorDefault, termbox.ColorDefault)
-		x++
 	}
 }
 

@@ -30,9 +30,9 @@ acts:
   - name: "Any questions?"
     time: 1m
 
-# Show the total number of people and how many of them have passed (TODO)
+# Show the total number of people and how many of them have passed
 counter: false
 
 # Shows the next person at the bottom, who will become active after passing the current one
-next: true
+next: false
 
