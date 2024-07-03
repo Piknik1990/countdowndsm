@@ -424,4 +424,8 @@ var defaultFontSmall = Font{
 		"░░ ",
 		"░░ ",
 	},
+	':': {
+		"▄ ",
+		"▄ ",
+	},
 }

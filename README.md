@@ -32,6 +32,8 @@ The configuration file contains the following parameters:
 * `acts` - the order of the stages of performances for each of the persons above:
   * `name` - the name of the stage
   * `time` - time of the stage
+* `counter` - add a person counter (TODO)
+* `next` - show the next person
 
 ## Key binding
 

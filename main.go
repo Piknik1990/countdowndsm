@@ -40,6 +40,7 @@ type yamlData struct {
 	Acts []map[string]interface{} `yaml:'acts'`
 	Persons []string `yaml:'persons'`
 	Random bool `yaml:'random'`
+	Next bool `yaml:'next'`
 }
 
 func ReadConfig() yamlData {
@@ -100,12 +101,12 @@ func main() {
 	persons := config.Persons
 
 	// Mix persons
-	if config.Random == true {
+	if config.Random {
 		rand.Seed(time.Now().UnixNano())
 		rand.Shuffle(len(persons), func(i, j int) { persons[i], persons[j] = persons[j], persons[i] })
 	}
 
-	for _, person := range persons {
+	for personIndex, person := range persons {
 
 		for actIndex, act := range config.Acts {
 
@@ -135,15 +136,16 @@ func main() {
 				}
 			}()
 
-			countdown(timeLeft, actName, person)
+			countdown(timeLeft, actName, person, config.Next, persons, personIndex)
 		}
 	}
 }
 
-func countdown(totalDuration time.Duration, actTitle string, personNote string) {
+func countdown(totalDuration time.Duration, actTitle string, personNote string, nextBool bool, allPersons []string, index int) {
 	timeLeft := totalDuration
 	title := actTitle
 	note := personNote
+	nextPerson := allPersons[index+1]
 
 	var (
 		exitCode 				int
@@ -152,7 +154,7 @@ func countdown(totalDuration time.Duration, actTitle string, personNote string) 
 	w, h = termbox.Size()
 	start(timeLeft)
 
-	draw(title, timeLeft, note, w, h)
+	draw(title, timeLeft, note, w, h, nextBool, nextPerson)
 
 loop:
 	for {
@@ -170,7 +172,7 @@ loop:
 
 			case <-ticker.C:
 				timeLeft -= tick
-				draw(title, timeLeft, note, w, h)
+				draw(title, timeLeft, note, w, h, nextBool, nextPerson)
 			case <-timer.C:
 				break loop
 		}
@@ -205,15 +207,16 @@ func format(d time.Duration) string {
 }
 
 
-func draw(t string, d time.Duration, n string, w int, h int) {
+func draw(t string, d time.Duration, n string, w int, h int, next bool, np string) {
 	clear()
 
 	str := format(d)
 	timerText := toText(str)
 	titleStatus := toTextSmall(strings.ToLower(t))
 	personNote := toTextSmall(strings.ToLower(n))
+	personNext := toTextSmall(strings.ToLower("next: " + np))
 
-	xTitle, yTitle, xTimer, yTimer, xNote, yNote := w/2-titleStatus.width()/2, h/2-timerText.height()/2-2-titleStatus.height(), w/2-timerText.width()/2, h/2-timerText.height()/2, w/2-personNote.width()/2, h/2+timerText.height()/2+2
+	xTitle, yTitle, xTimer, yTimer, xNote, yNote, xNext, yNext := w/2-titleStatus.width()/2, h/2-timerText.height()/2-2-titleStatus.height(), w/2-timerText.width()/2, h/2-timerText.height()/2, w/2-personNote.width()/2, h/2+timerText.height()/2+2, w/2-personNext.width()/2, h/2+timerText.height()/2+6
 
 	for _, symbolTitle := range titleStatus {
 		echo_symbol(symbolTitle, xTitle, yTitle)
@@ -228,6 +231,13 @@ func draw(t string, d time.Duration, n string, w int, h int) {
 	for _, symbolNote := range personNote {
 		echo_symbol(symbolNote, xNote, yNote)
 		xNote += symbolNote.width()
+	}
+
+	if next {
+		for _, symbolNext := range personNext {
+			echo_symbol(symbolNext, xNext, yNext)
+			xNext += symbolNext.width()
+		}
 	}
 
 	flush()
