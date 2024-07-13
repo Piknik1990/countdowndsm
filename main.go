@@ -228,6 +228,14 @@ func draw(t string, d time.Duration, p string, w int, h int, next bool, np strin
 
 	xTitle, yTitle, xTimer, yTimer, xNote, yNote, xNext, yNext := w/2-titleStatus.width()/2, h/2-timerText.height()/2-2-titleStatus.height(), w/2-timerText.width()/2, h/2-timerText.height()/2, w/2-personNote.width()/2, h/2+timerText.height()/2+2, w/2-personNext.width()/2, h/2+timerText.height()/2+6
 
+  if next {
+		// Up the Y-center
+		yTitle = yTitle - 2
+		yTimer = yTimer - 2
+		yNote = yNote - 2
+		yNext = yNext - 2
+	}
+
 	for _, symbolTitle := range titleStatus {
 		echo_symbol(symbolTitle, xTitle, yTitle)
 		xTitle += symbolTitle.width()
