@@ -34,6 +34,7 @@ var (
 	inputStartTime 	time.Time
 	actTime				 	string
 	actName					string
+	paused		    bool
 )
 
 
@@ -109,7 +110,14 @@ func main() {
 	}
 
 	personsCount := len(persons)
-
+	// Init terminal
+	termbox.Init()
+	queues = make(chan termbox.Event)
+	go func() {
+		for {
+			queues <- termbox.PollEvent()
+		}
+	}()
 	for personIndex, person := range persons {
 
 		for actIndex, act := range config.Acts {
@@ -127,18 +135,6 @@ func main() {
 				}
 			}
 
-			// Clean terminal
-			err = termbox.Init()
-			if err != nil {
-				panic(err)
-			}
-
-			queues = make(chan termbox.Event)
-			go func() {
-				for {
-					queues <- termbox.PollEvent()
-				}
-			}()
 
 			countdown(timeLeft, actName, person, config.Next, persons, personIndex, config.Counter, personsCount)
 		}
@@ -162,7 +158,7 @@ func countdown(totalDuration time.Duration, actTitle string, personNote string, 
 	start(timeLeft)
 
 	draw(title, timeLeft, note, w, h, nextBool, nextPerson, personIndex, counterBool, personCount)
-
+	paused = false
 loop:
 	for {
 		select {
@@ -176,16 +172,33 @@ loop:
 				if ev.Key == termbox.KeySpace || ev.Key == termbox.KeyEnter {
 					break loop
 				}
-
+    			// Pause/Resume
+    			if ev.Key == termbox.KeyTab {
+					// Toggle pause state
+					paused = !paused
+					if paused {
+					  // If paused, stop the ticker
+					  timer.Stop()
+					  ticker.Stop()
+					} else {
+					  // If resumed, restart the ticker
+					  //timer = time.NewTimer(timeLeft)
+					  //ticker = time.NewTicker(tick)
+					  start(timeLeft)
+					}
+				}
 			case <-ticker.C:
-				timeLeft -= tick
-				draw(title, timeLeft, note, w, h, nextBool, nextPerson, personIndex, counterBool, personCount)
+				if !paused {
+					timeLeft -= tick
+					draw(title, timeLeft, note, w, h, nextBool, nextPerson, personIndex, counterBool, personCount)
+				}
 			case <-timer.C:
+				if !paused {
 				break loop
+				}
 		}
 	}
 
-	termbox.Close()
 
 	if exitCode != 0 {
 		os.Exit(exitCode)
