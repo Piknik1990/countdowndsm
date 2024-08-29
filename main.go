@@ -135,7 +135,6 @@ func main() {
 				}
 			}
 
-
 			countdown(timeLeft, actName, person, config.Next, persons, personIndex, config.Counter, personsCount)
 		}
 	}
@@ -182,8 +181,6 @@ loop:
 					  ticker.Stop()
 					} else {
 					  // If resumed, restart the ticker
-					  //timer = time.NewTimer(timeLeft)
-					  //ticker = time.NewTicker(tick)
 					  start(timeLeft)
 					}
 				}
