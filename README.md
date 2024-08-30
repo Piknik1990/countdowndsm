@@ -38,7 +38,7 @@ The configuration file contains the following parameters:
 ## Key binding
 
 * `Space` or `Enter`: Skip the current stage
-* `Esc` or `Ctrl+C': Stop the program
+* `Esc` or `Ctrl+C`: Stop the program
 * `Tab`: Pausing the timer
 
 ## License
