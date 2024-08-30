@@ -39,6 +39,7 @@ The configuration file contains the following parameters:
 
 * `Space` or `Enter`: Skip the current stage
 * `Esc` or `Ctrl+C': Stop the program
+* `Tab`: Pausing the timer
 
 ## License
 

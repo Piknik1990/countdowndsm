@@ -34,7 +34,7 @@ var (
 	inputStartTime 	time.Time
 	actTime				 	string
 	actName					string
-	paused		    bool
+	paused		      bool
 )
 
 
@@ -156,8 +156,8 @@ func countdown(totalDuration time.Duration, actTitle string, personNote string, 
 	w, h = termbox.Size()
 	start(timeLeft)
 
-	draw(title, timeLeft, note, w, h, nextBool, nextPerson, personIndex, counterBool, personCount)
 	paused = false
+	draw(title, timeLeft, note, w, h, nextBool, nextPerson, personIndex, counterBool, personCount, paused)
 loop:
 	for {
 		select {
@@ -180,14 +180,15 @@ loop:
 					  timer.Stop()
 					  ticker.Stop()
 					} else {
-					  // If resumed, restart the ticker
-					  start(timeLeft)
+						// If resumed, restart the ticker
+						start(timeLeft)
 					}
+					draw(title, timeLeft, note, w, h, nextBool, nextPerson, personIndex, counterBool, personCount, paused)
 				}
 			case <-ticker.C:
 				if !paused {
 					timeLeft -= tick
-					draw(title, timeLeft, note, w, h, nextBool, nextPerson, personIndex, counterBool, personCount)
+					draw(title, timeLeft, note, w, h, nextBool, nextPerson, personIndex, counterBool, personCount, paused)
 				}
 			case <-timer.C:
 				if !paused {
@@ -195,7 +196,6 @@ loop:
 				}
 		}
 	}
-
 
 	if exitCode != 0 {
 		os.Exit(exitCode)
@@ -224,12 +224,15 @@ func format(d time.Duration) string {
 }
 
 
-func draw(t string, d time.Duration, p string, w int, h int, next bool, np string, pi int, counter bool, pc int) {
+func draw(t string, d time.Duration, p string, w int, h int, next bool, np string, pi int, counter bool, pc int, pause bool) {
 	clear()
 
 	str := format(d)
 	timerText := toText(str)
 	titleStatus := toTextSmall(strings.ToLower(t))
+	if pause {
+		titleStatus = toTextSmall(strings.ToLower("paused"))
+	}
 	personNote := toTextSmall(strings.ToLower(p))
 	if counter {
 		personNote = toTextSmall(strings.ToLower(p + " (" + strconv.Itoa(pi+1) + "/" + strconv.Itoa(pc) + ")"))
