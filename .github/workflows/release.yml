@@ -71,7 +71,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ${{ env.BIN_PATH }}
-          pattern: SNI-Finder-*
+          pattern: ${{ env.PKG_NAME }}-*
           merge-multiple: true
 
       - name: Display structure of downloaded files
