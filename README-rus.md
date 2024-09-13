@@ -15,7 +15,20 @@
 
 ## Установка
 
-Cкачайте бинарный файл из [releases](https://github.com/Piknik1990/countdowndsm/releases).
+Программа готова к работе на Linux, Mac и Windows. Cкачайте бинарный файл из [releases](https://github.com/Piknik1990/countdowndsm/releases).
+
+Пример установки для Linux:
+
+```shell
+$ wget https://github.com/Piknik1990/countdowndsm/releases/download/v1.3.0/countdowndsm-linux-amd64
+$ sudo cp countdowndsm-linux-amd64 /usr/bin/countdowndsm
+$ sudo chmod 755 /usr/bin/countdowndsm
+$ countdowndsm
+ countdowndsm <pathtoconfig>
+
+ Usage
+        countdowndsm /path/to/config.yml
+```
 
 ## Использование
 

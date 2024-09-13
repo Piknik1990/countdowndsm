@@ -15,7 +15,20 @@ Each participant goes through all the set stages of the performance. If the spea
 
 ## Install
 
-Download the binary file from [releases](https://github.com/Piknik1990/countdowndsm/releases).
+Ready for Linux, Mac and Windows. Download the binary file from [releases](https://github.com/Piknik1990/countdowndsm/releases).
+
+Installation example for Linux:
+
+```shell
+$ wget https://github.com/Piknik1990/countdowndsm/releases/download/v1.3.0/countdowndsm-linux-amd64
+$ sudo cp countdowndsm-linux-amd64 /usr/bin/countdowndsm
+$ sudo chmod 755 /usr/bin/countdowndsm
+$ countdowndsm
+ countdowndsm <pathtoconfig>
+
+ Usage
+        countdowndsm /path/to/config.yml
+```
 
 ## Usage
 
